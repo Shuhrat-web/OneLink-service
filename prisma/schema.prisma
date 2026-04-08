@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CaptchaMode {
+  off
+  always
+}
+
+enum Platform {
+  ios
+  android
+  web
+}
+
+enum DeviceType {
+  mobile
+  tablet
+  desktop
+  bot
+  unknown
+}
+
+enum AdminRole {
+  super_admin
+  admin
+}
+
+model SmartLink {
+  id             String      @id @default(cuid())
+  title          String
+  description    String?
+  slug           String      @unique
+  iosUrl         String
+  androidUrl     String
+  webUrl         String
+  deepLinkUrl    String?
+  isActive       Boolean     @default(true)
+  expiresAt      DateTime?
+  maxClicks      Int?
+  captchaEnabled Boolean     @default(false)
+  captchaMode    CaptchaMode @default(off)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  clickEvents ClickEvent[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([expiresAt])
+}
+
+model ClickEvent {
+  id             String     @id @default(cuid())
+  smartLinkId    String
+  clickedAt      DateTime   @default(now())
+  platform       Platform
+  os             String?
+  browser        String?
+  deviceType     DeviceType @default(unknown)
+  userAgent      String?
+  referrer       String?
+  country        String?
+  ipHash         String?
+  isUnique       Boolean    @default(false)
+  captchaPassed  Boolean    @default(false)
+  redirectTarget String
+
+  smartLink SmartLink @relation(fields: [smartLinkId], references: [id], onDelete: Cascade)
+
+  @@index([smartLinkId, clickedAt])
+  @@index([smartLinkId, platform])
+  @@index([ipHash, clickedAt])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(admin)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
