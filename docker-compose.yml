@@ -25,11 +25,11 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      NODE_ENV: production
-      APP_BASE_URL: http://localhost:8000
-      AUTH_SECRET: change-me-in-production
-      APP_HASH_SALT: change-me-in-production
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/smartlink?schema=public
+      NODE_ENV: ${NODE_ENV:-production}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8000}
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
+      APP_HASH_SALT: ${APP_HASH_SALT:-change-me-in-production}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/smartlink?schema=public}
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
       LINK_PREFIX: ${LINK_PREFIX:-}
