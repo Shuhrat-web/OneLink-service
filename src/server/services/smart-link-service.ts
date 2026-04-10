@@ -24,6 +24,8 @@ type CreateInput = {
   captchaMode?: "off" | "always";
 };
 
+type CurrentUser = { id: string; role: "admin" | "user" };
+
 async function ensureUniqueSlug(preferred?: string): Promise<string> {
   if (preferred) {
     const slug = normalizeSlug(preferred);
@@ -40,7 +42,7 @@ async function ensureUniqueSlug(preferred?: string): Promise<string> {
   throw new Error("Unable to generate unique slug");
 }
 
-export async function createSmartLinkUseCase(input: CreateInput) {
+export async function createSmartLinkUseCase(input: CreateInput, ownerId: string) {
   const slug = await ensureUniqueSlug(input.slug);
 
   return createSmartLink({
@@ -56,6 +58,7 @@ export async function createSmartLinkUseCase(input: CreateInput) {
     maxClicks: input.maxClicks,
     captchaEnabled: input.captchaEnabled ?? false,
     captchaMode: input.captchaMode ?? "off",
+    owner: { connect: { id: ownerId } },
   });
 }
 
@@ -91,12 +94,13 @@ export async function listSmartLinksUseCase(params: {
   expired: "all" | "true" | "false";
   page: number;
   pageSize: number;
-}) {
+}, currentUser: CurrentUser) {
   return listSmartLinks({
     search: params.search,
     active: params.active === "all" ? undefined : params.active === "true",
     captchaEnabled: params.captcha === "all" ? undefined : params.captcha === "true",
     expired: params.expired === "all" ? undefined : params.expired === "true",
+    ownerId: currentUser.role === "admin" ? undefined : currentUser.id,
     page: params.page,
     pageSize: params.pageSize,
   });

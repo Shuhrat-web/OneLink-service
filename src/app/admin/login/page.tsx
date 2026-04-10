@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
-import { getCurrentAdmin } from "@/server/services/auth-service";
+import { getCurrentUser } from "@/server/services/auth-service";
 import { LoginForm } from "@/features/auth/login-form";
 
 export default async function AdminLoginPage() {
-  const admin = await getCurrentAdmin();
-  if (admin) redirect("/admin");
+  const user = await getCurrentUser();
+  if (user) redirect("/admin");
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-4xl items-center justify-center px-6">

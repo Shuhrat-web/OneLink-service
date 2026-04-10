@@ -17,6 +17,10 @@ export function unauthorized(message = "Unauthorized") {
   return NextResponse.json({ error: message }, { status: 401 });
 }
 
+export function forbidden(message = "Forbidden") {
+  return NextResponse.json({ error: message }, { status: 403 });
+}
+
 export function notFound(message = "Not found") {
   return NextResponse.json({ error: message }, { status: 404 });
 }
@@ -27,6 +31,8 @@ export function serverError(message = "Internal server error") {
 
 export function mapError(error: unknown) {
   if (error instanceof ZodError) return badRequest("Validation error", error.flatten());
+  if (error instanceof Error && error.message === "FORBIDDEN") return forbidden();
+  if (error instanceof Error && error.message === "UNAUTHORIZED") return unauthorized();
   if (error instanceof Error) return badRequest(error.message);
   return serverError();
 }

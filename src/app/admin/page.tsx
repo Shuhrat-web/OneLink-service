@@ -1,10 +1,10 @@
 import { AdminShell } from "@/components/admin/admin-shell";
 import { StatsCards } from "@/features/analytics/stats-cards";
-import { requireAdmin } from "@/features/auth/require-admin";
+import { requireAuthenticatedUser } from "@/features/auth/require-admin";
 import { getDashboardAggregates } from "@/server/repositories/click-event-repository";
 
 export default async function AdminDashboardPage() {
-  await requireAdmin();
+  await requireAuthenticatedUser();
   const stats = await getDashboardAggregates();
 
   return (

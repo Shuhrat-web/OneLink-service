@@ -31,6 +31,26 @@ export function LinkForm({ mode, initial }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  function parseApiError(data: { error?: string; details?: unknown }) {
+    if (data.error !== "Validation error") return data.error ?? "Request failed";
+
+    const details = data.details as {
+      formErrors?: string[];
+      fieldErrors?: Record<string, string[] | undefined>;
+    } | undefined;
+
+    const messages: string[] = [];
+    for (const message of details?.formErrors ?? []) messages.push(message);
+
+    for (const [field, fieldMessages] of Object.entries(details?.fieldErrors ?? {})) {
+      for (const message of fieldMessages ?? []) {
+        messages.push(`${field}: ${message}`);
+      }
+    }
+
+    return messages.length > 0 ? messages.join("; ") : "Validation error";
+  }
+
   async function onSubmit(formData: FormData) {
     setError(null);
     setLoading(true);
@@ -62,7 +82,7 @@ export function LinkForm({ mode, initial }: Props) {
     const data = await resp.json();
 
     if (!resp.ok) {
-      setError(data.error ?? "Request failed");
+      setError(parseApiError(data));
       setLoading(false);
       return;
     }

@@ -1,9 +1,9 @@
 import { AdminShell } from "@/components/admin/admin-shell";
 import { LinkForm } from "@/features/links/link-form";
-import { requireAdmin } from "@/features/auth/require-admin";
+import { requireAuthenticatedUser } from "@/features/auth/require-admin";
 
 export default async function NewLinkPage() {
-  await requireAdmin();
+  await requireAuthenticatedUser();
 
   return (
     <AdminShell>

@@ -1,13 +1,13 @@
 import { NextRequest } from "next/server";
 import { badRequest, created, mapError, ok, unauthorized } from "@/server/api";
-import { getCurrentAdmin } from "@/server/services/auth-service";
+import { getCurrentUser } from "@/server/services/auth-service";
 import { smartLinkCreateSchema, smartLinkQuerySchema } from "@/server/schemas/link";
 import { createSmartLinkUseCase, listSmartLinksUseCase } from "@/server/services/smart-link-service";
 
 export async function GET(req: NextRequest) {
   try {
-    const admin = await getCurrentAdmin();
-    if (!admin) return unauthorized();
+    const user = await getCurrentUser();
+    if (!user) return unauthorized();
 
     const { searchParams } = new URL(req.url);
     const input = smartLinkQuerySchema.parse({
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
       pageSize: searchParams.get("pageSize") ?? undefined,
     });
 
-    const result = await listSmartLinksUseCase(input);
+    const result = await listSmartLinksUseCase(input, user);
     return ok(result);
   } catch (error) {
     return mapError(error);
@@ -28,8 +28,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const admin = await getCurrentAdmin();
-    if (!admin) return unauthorized();
+    const user = await getCurrentUser();
+    if (!user) return unauthorized();
 
     const body = await req.json();
     const input = smartLinkCreateSchema.parse(body);
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const link = await createSmartLinkUseCase({
       ...input,
       expiresAt: input.expiresAt,
-    });
+    }, user.id);
 
     return created(link);
   } catch (error) {

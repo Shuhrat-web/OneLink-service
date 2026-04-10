@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ReactNode } from "react";
+import { getCurrentUser } from "@/server/services/auth-service";
 
-export function AdminShell({ children }: { children: ReactNode }) {
+export async function AdminShell({ children }: { children: ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <div className="min-h-screen bg-zinc-50">
       <header className="border-b border-zinc-200 bg-white">
@@ -13,6 +16,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <nav className="flex items-center gap-4 text-sm">
             <Link className="text-zinc-700 hover:text-zinc-900" href="/admin">Dashboard</Link>
             <Link className="text-zinc-700 hover:text-zinc-900" href="/admin/links">Links</Link>
+            {user?.role === "admin" ? <Link className="text-zinc-700 hover:text-zinc-900" href="/admin/users">Users</Link> : null}
             <form action="/api/admin/auth/logout" method="post">
               <button className="text-zinc-700 hover:text-zinc-900" type="submit">Logout</button>
             </form>

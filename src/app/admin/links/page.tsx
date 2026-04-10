@@ -2,7 +2,7 @@ import Link from "next/link";
 import { withLinkPrefix } from "@/lib/env";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Badge } from "@/components/ui/badge";
-import { requireAdmin } from "@/features/auth/require-admin";
+import { requireAuthenticatedUser } from "@/features/auth/require-admin";
 import { smartLinkQuerySchema } from "@/server/schemas/link";
 import { listSmartLinksUseCase } from "@/server/services/smart-link-service";
 import { formatDateTime } from "@/lib/utils";
@@ -10,7 +10,7 @@ import { formatDateTime } from "@/lib/utils";
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export default async function AdminLinksPage({ searchParams }: Props) {
-  await requireAdmin();
+  const user = await requireAuthenticatedUser();
 
   const raw = await searchParams;
   const parsed = smartLinkQuerySchema.parse({
@@ -22,7 +22,7 @@ export default async function AdminLinksPage({ searchParams }: Props) {
     pageSize: typeof raw.pageSize === "string" ? raw.pageSize : undefined,
   });
 
-  const result = await listSmartLinksUseCase(parsed);
+  const result = await listSmartLinksUseCase(parsed, user);
 
   return (
     <AdminShell>

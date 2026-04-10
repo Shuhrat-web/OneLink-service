@@ -1,17 +1,18 @@
 import { notFound } from "next/navigation";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { LinkForm } from "@/features/links/link-form";
-import { requireAdmin } from "@/features/auth/require-admin";
+import { canManageLink, requireAuthenticatedUser } from "@/features/auth/require-admin";
 import { findSmartLinkById } from "@/server/repositories/smart-link-repository";
 
 type Props = { params: Promise<{ id: string }> };
 
 export default async function EditLinkPage({ params }: Props) {
-  await requireAdmin();
+  const user = await requireAuthenticatedUser();
 
   const { id } = await params;
   const link = await findSmartLinkById(id);
   if (!link) notFound();
+  if (!canManageLink(user, link)) notFound();
 
   const expires = link.expiresAt
     ? new Date(link.expiresAt.getTime() - link.expiresAt.getTimezoneOffset() * 60000).toISOString().slice(0, 16)

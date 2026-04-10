@@ -26,9 +26,9 @@ enum DeviceType {
   unknown
 }
 
-enum AdminRole {
-  super_admin
+enum UserRole {
   admin
+  user
 }
 
 model SmartLink {
@@ -45,12 +45,15 @@ model SmartLink {
   maxClicks      Int?
   captchaEnabled Boolean     @default(false)
   captchaMode    CaptchaMode @default(off)
+  ownerId        String
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
+  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   clickEvents ClickEvent[]
 
   @@index([slug])
+  @@index([ownerId])
   @@index([isActive])
   @@index([expiresAt])
 }
@@ -78,11 +81,14 @@ model ClickEvent {
   @@index([ipHash, clickedAt])
 }
 
-model AdminUser {
+model User {
   id           String    @id @default(cuid())
   email        String    @unique
   passwordHash String
-  role         AdminRole @default(admin)
+  role         UserRole  @default(user)
+  isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  smartLinks SmartLink[]
 }

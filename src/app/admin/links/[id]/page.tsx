@@ -4,7 +4,7 @@ import { withLinkPrefix } from "@/lib/env";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { requireAdmin } from "@/features/auth/require-admin";
+import { canAccessLink, requireAuthenticatedUser } from "@/features/auth/require-admin";
 import { formatDateTime } from "@/lib/utils";
 import { findSmartLinkById } from "@/server/repositories/smart-link-repository";
 import { getLinkStats, getRecentEvents } from "@/server/repositories/click-event-repository";
@@ -12,11 +12,12 @@ import { getLinkStats, getRecentEvents } from "@/server/repositories/click-event
 type Props = { params: Promise<{ id: string }> };
 
 export default async function LinkDetailsPage({ params }: Props) {
-  await requireAdmin();
+  const user = await requireAuthenticatedUser();
 
   const { id } = await params;
   const link = await findSmartLinkById(id);
   if (!link) notFound();
+  if (!canAccessLink(user, link)) notFound();
 
   const [stats, recent] = await Promise.all([getLinkStats(link.id), getRecentEvents(link.id, 20)]);
   type RecentEvent = Awaited<ReturnType<typeof getRecentEvents>>[number];
@@ -45,6 +46,7 @@ export default async function LinkDetailsPage({ params }: Props) {
             <div><dt className="text-zinc-500">Android URL</dt><dd className="break-all">{link.androidUrl}</dd></div>
             <div><dt className="text-zinc-500">Web URL</dt><dd className="break-all">{link.webUrl}</dd></div>
             <div><dt className="text-zinc-500">Deep Link</dt><dd className="break-all">{link.deepLinkUrl ?? "—"}</dd></div>
+            {user.role === "admin" ? <div><dt className="text-zinc-500">Owner</dt><dd className="break-all">{link.owner.email}</dd></div> : null}
           </dl>
         </Card>
 

@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { getAuthSecret } from "@/lib/env";
-import { findAdminByEmail, findAdminById } from "@/server/repositories/admin-user-repository";
+import { findUserByEmail, findUserById } from "@/server/repositories/admin-user-repository";
 
 const COOKIE_NAME = "admin_session";
 const SESSION_AGE_SEC = 60 * 60 * 24 * 7;
@@ -36,15 +36,16 @@ function decode(token: string): SessionPayload | null {
   }
 }
 
-export async function authenticateAdmin(email: string, password: string) {
-  const admin = await findAdminByEmail(email);
-  if (!admin) return null;
-  return (await bcrypt.compare(password, admin.passwordHash)) ? admin : null;
+export async function authenticateUser(email: string, password: string) {
+  const user = await findUserByEmail(email);
+  if (!user) return null;
+  if (!user.isActive) return null;
+  return (await bcrypt.compare(password, user.passwordHash)) ? user : null;
 }
 
-export async function createAdminSession(adminId: string) {
+export async function createAdminSession(userId: string) {
   const exp = Math.floor(Date.now() / 1000) + SESSION_AGE_SEC;
-  const token = encode({ sub: adminId, exp });
+  const token = encode({ sub: userId, exp });
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -60,7 +61,7 @@ export async function destroyAdminSession() {
   cookieStore.delete(COOKIE_NAME);
 }
 
-export async function getCurrentAdmin() {
+export async function getCurrentUser() {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
@@ -68,5 +69,12 @@ export async function getCurrentAdmin() {
   const payload = decode(token);
   if (!payload) return null;
 
-  return findAdminById(payload.sub);
+  const user = await findUserById(payload.sub);
+  if (!user?.isActive) return null;
+  return user;
+}
+
+export async function getCurrentAdmin() {
+  const user = await getCurrentUser();
+  return user?.role === "admin" ? user : null;
 }

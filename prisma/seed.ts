@@ -6,6 +6,8 @@ const prisma = new PrismaClient();
 async function main() {
   const email = process.env.ADMIN_EMAIL;
   const password = process.env.ADMIN_PASSWORD;
+  const userEmail = process.env.USER_EMAIL;
+  const userPassword = process.env.USER_PASSWORD;
 
   if (!email || !password) {
     console.log("ADMIN_EMAIL or ADMIN_PASSWORD is not set, seed skipped");
@@ -14,17 +16,32 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-  await prisma.adminUser.upsert({
+  await prisma.user.upsert({
     where: { email },
     update: { passwordHash },
     create: {
       email,
       passwordHash,
-      role: "super_admin",
+      role: "admin",
     },
   });
 
   console.log(`Seeded admin user: ${email}`);
+
+  if (userEmail && userPassword) {
+    const userPasswordHash = await bcrypt.hash(userPassword, 12);
+    await prisma.user.upsert({
+      where: { email: userEmail },
+      update: { passwordHash: userPasswordHash },
+      create: {
+        email: userEmail,
+        passwordHash: userPasswordHash,
+        role: "user",
+      },
+    });
+
+    console.log(`Seeded regular user: ${userEmail}`);
+  }
 }
 
 main()

@@ -84,6 +84,25 @@ Production-minded MVP платформа для smart-редиректов и QR
 - `/admin/links/[id]/edit`
 - После успешного логина используется полный переход на `/admin`, чтобы сессионная cookie гарантированно учитывалась сразу на первом заходе
 
+Роли и права доступа:
+
+- `admin`: видит все ссылки, может создавать/редактировать/удалять любые ссылки, смотреть stats/events по всем ссылкам.
+- `user`: видит только свои ссылки, может создавать ссылки, редактировать/удалять только свои, смотреть stats/events только по своим.
+
+User management (только для `admin`):
+
+- список пользователей: `/admin/users`
+- создание пользователя: `/admin/users/new`
+- просмотр пользователя: `/admin/users/[id]`
+- редактирование пользователя: `/admin/users/[id]/edit`
+- через UI/API можно менять email, роль (`admin|user`), пароль и активность (`isActive`)
+
+Модель ownership:
+
+- каждая `SmartLink` имеет обязательного владельца (`ownerId`)
+- при создании ссылки владелец всегда = текущий авторизованный пользователь
+- серверные проверки выполняются и в страницах admin, и в admin API
+
 Фильтры в списке ссылок:
 
 - active/inactive
@@ -145,14 +164,16 @@ cp .env.example .env
 - `TURNSTILE_SECRET_KEY`
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
 
-Опционально:
-
-- `LINK_PREFIX` — префикс публичных ссылок. Поддерживаются значения вида `prefix`, `/prefix`, `/prefix/`; внутри приложения нормализуется до `prefix`.
-
-Для seed admin:
+Для пользователей seed:
 
 - `ADMIN_EMAIL`
 - `ADMIN_PASSWORD`
+- `USER_EMAIL` (optional)
+- `USER_PASSWORD` (optional)
+
+Опционально:
+
+- `LINK_PREFIX` — префикс публичных ссылок. Поддерживаются значения вида `prefix`, `/prefix`, `/prefix/`; внутри приложения нормализуется до `prefix`.
 
 См. шаблон: [`.env.example`](.env.example)
 
@@ -232,6 +253,10 @@ docker compose up --build
 - `/admin/links/new`
 - `/admin/links/[id]`
 - `/admin/links/[id]/edit`
+- `/admin/users` (admin only)
+- `/admin/users/new` (admin only)
+- `/admin/users/[id]` (admin only)
+- `/admin/users/[id]/edit` (admin only)
 
 ### Admin API
 
@@ -242,6 +267,10 @@ docker compose up --build
 - `DELETE /api/admin/links/[id]`
 - `GET /api/admin/links/[id]/stats`
 - `GET /api/admin/links/[id]/events`
+- `POST /api/admin/users`
+- `GET /api/admin/users`
+- `GET /api/admin/users/[id]`
+- `PATCH /api/admin/users/[id]`
 
 ---
 
@@ -253,7 +282,7 @@ docker compose up --build
 
 - `SmartLink`
 - `ClickEvent`
-- `AdminUser`
+- `User` (`role: admin | user`, `isActive`)
 
 Seed:
 
@@ -267,6 +296,8 @@ Seed:
 - URL/slug валидируются через Zod
 - captcha верифицируется server-side
 - админ-маршруты защищены cookie-сессией
+- авторизация основана на роли пользователя и ownership ссылки (`ownerId`)
+- management пользователей доступен только `admin`
 - секреты не хардкодятся (через env)
 
 ---
