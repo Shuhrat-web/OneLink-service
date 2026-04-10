@@ -52,7 +52,7 @@ export default async function AdminLinksPage({ searchParams }: Props) {
         <table className="min-w-full text-sm">
           <thead className="bg-zinc-50 text-zinc-500">
             <tr>
-              <th className="px-4 py-3 text-left font-medium">Title</th><th className="px-4 py-3 text-left font-medium">Slug</th><th className="px-4 py-3 text-left font-medium">State</th><th className="px-4 py-3 text-left font-medium">Captcha</th><th className="px-4 py-3 text-left font-medium">Expires</th><th className="px-4 py-3 text-left font-medium">Updated</th>
+              <th className="px-4 py-3 text-left font-medium">Title</th><th className="px-4 py-3 text-left font-medium">Slug</th><th className="px-4 py-3 text-left font-medium">Owner</th><th className="px-4 py-3 text-left font-medium">State</th><th className="px-4 py-3 text-left font-medium">Captcha</th><th className="px-4 py-3 text-left font-medium">Expires</th><th className="px-4 py-3 text-left font-medium">Updated</th>
             </tr>
           </thead>
           <tbody>
@@ -60,6 +60,7 @@ export default async function AdminLinksPage({ searchParams }: Props) {
               <tr key={item.id} className="border-t border-zinc-100">
                 <td className="px-4 py-3"><Link className="font-medium text-zinc-900 underline" href={`/admin/links/${item.id}`}>{item.title}</Link></td>
                 <td className="px-4 py-3 text-zinc-700">{withLinkPrefix(`/${item.slug}`)}</td>
+                <td className="px-4 py-3 text-zinc-700">{item.owner.email}</td>
                 <td className="px-4 py-3"><Badge tone={item.isActive ? "green" : "red"}>{item.isActive ? "active" : "inactive"}</Badge></td>
                 <td className="px-4 py-3"><Badge tone={item.captchaEnabled ? "amber" : "gray"}>{item.captchaEnabled ? item.captchaMode : "off"}</Badge></td>
                 <td className="px-4 py-3 text-zinc-700">{formatDateTime(item.expiresAt)}</td>

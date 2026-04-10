@@ -81,22 +81,34 @@ export async function getRecentEvents(smartLinkId: string, limit = 50) {
   return prisma.clickEvent.findMany({ where: { smartLinkId }, orderBy: { clickedAt: "desc" }, take: limit });
 }
 
-export async function getDashboardAggregates() {
+export async function getDashboardAggregates(ownerId?: string) {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
+  const smartLinkWhere = ownerId ? { ownerId } : undefined;
+  const clickEventWhereBase = ownerId ? { smartLink: { ownerId } } : {};
+
   const [totalLinks, activeLinks, totalClicks, clicksToday] = await Promise.all([
-    prisma.smartLink.count(),
-    prisma.smartLink.count({ where: { isActive: true } }),
-    prisma.clickEvent.count(),
-    prisma.clickEvent.count({ where: { clickedAt: { gte: startOfDay } } }),
+    prisma.smartLink.count({ where: smartLinkWhere }),
+    prisma.smartLink.count({ where: { ...(smartLinkWhere ?? {}), isActive: true } }),
+    prisma.clickEvent.count({ where: clickEventWhereBase }),
+    prisma.clickEvent.count({
+      where: {
+        ...clickEventWhereBase,
+        clickedAt: { gte: startOfDay },
+      },
+    }),
   ]);
 
   return { totalLinks, activeLinks, totalClicks, clicksToday };
 }
 
-export async function getDashboardPlatformBreakdown() {
-  const rows = await prisma.clickEvent.groupBy({ by: ["platform"], _count: { _all: true } });
+export async function getDashboardPlatformBreakdown(ownerId?: string) {
+  const rows = await prisma.clickEvent.groupBy({
+    by: ["platform"],
+    where: ownerId ? { smartLink: { ownerId } } : undefined,
+    _count: { _all: true },
+  });
   const platformMap: Record<Platform, number> = { ios: 0, android: 0, web: 0 };
 
   for (const row of rows) {
@@ -106,19 +118,21 @@ export async function getDashboardPlatformBreakdown() {
   return platformMap;
 }
 
-export async function getDashboardClicksOverTime(days = 7): Promise<ClicksOverTimePoint[]> {
+export async function getDashboardClicksOverTime(days = 7, ownerId?: string): Promise<ClicksOverTimePoint[]> {
   const safeDays = Math.max(1, Math.min(30, days));
   const { start, dates } = buildDateRange(safeDays);
+
+  const whereBase = ownerId ? { smartLink: { ownerId } } : {};
 
   const [totalRows, uniqueRows] = await Promise.all([
     prisma.clickEvent.groupBy({
       by: ["clickedAt"],
-      where: { clickedAt: { gte: start } },
+      where: { ...whereBase, clickedAt: { gte: start } },
       _count: { _all: true },
     }),
     prisma.clickEvent.groupBy({
       by: ["clickedAt"],
-      where: { clickedAt: { gte: start }, isUnique: true },
+      where: { ...whereBase, clickedAt: { gte: start }, isUnique: true },
       _count: { _all: true },
     }),
   ]);

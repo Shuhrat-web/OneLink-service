@@ -7,11 +7,13 @@ import { requireAuthenticatedUser } from "@/features/auth/require-admin";
 import { getDashboardAggregates, getDashboardClicksOverTime, getDashboardPlatformBreakdown } from "@/server/repositories/click-event-repository";
 
 export default async function AdminDashboardPage() {
-  await requireAuthenticatedUser();
+  const user = await requireAuthenticatedUser();
+  const scopedOwnerId = user.role === "admin" ? undefined : user.id;
+
   const [stats, clicksOverTime, platformBreakdown] = await Promise.all([
-    getDashboardAggregates(),
-    getDashboardClicksOverTime(7),
-    getDashboardPlatformBreakdown(),
+    getDashboardAggregates(scopedOwnerId),
+    getDashboardClicksOverTime(7, scopedOwnerId),
+    getDashboardPlatformBreakdown(scopedOwnerId),
   ]);
 
   return (
