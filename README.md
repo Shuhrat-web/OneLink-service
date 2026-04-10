@@ -229,7 +229,7 @@ docker compose up --build
 
 Сервисы:
 
-- app: `http://localhost:3000`
+- app: `http://localhost:8000`
 - postgres: `localhost:5432`
 
 Файлы Docker:

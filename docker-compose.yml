@@ -26,7 +26,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      APP_BASE_URL: http://localhost:3000
+      APP_BASE_URL: http://localhost:8000
       AUTH_SECRET: change-me-in-production
       APP_HASH_SALT: change-me-in-production
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/smartlink?schema=public
@@ -36,4 +36,4 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-ChangeMe123!}
     ports:
-      - "3000:3000"
+      - "8000:3000"
