@@ -4,10 +4,12 @@ import { withLinkPrefix } from "@/lib/env";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { DoughnutPlatformChart } from "@/features/analytics/doughnut-platform-chart";
+import { LineClicksChart } from "@/features/analytics/line-clicks-chart";
 import { canAccessLink, requireAuthenticatedUser } from "@/features/auth/require-admin";
 import { formatDateTime } from "@/lib/utils";
 import { findSmartLinkById } from "@/server/repositories/smart-link-repository";
-import { getLinkStats, getRecentEvents } from "@/server/repositories/click-event-repository";
+import { getLinkClicksOverTime, getLinkStats, getRecentEvents } from "@/server/repositories/click-event-repository";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -19,7 +21,11 @@ export default async function LinkDetailsPage({ params }: Props) {
   if (!link) notFound();
   if (!canAccessLink(user, link)) notFound();
 
-  const [stats, recent] = await Promise.all([getLinkStats(link.id), getRecentEvents(link.id, 20)]);
+  const [stats, recent, clicksOverTime] = await Promise.all([
+    getLinkStats(link.id),
+    getRecentEvents(link.id, 20),
+    getLinkClicksOverTime(link.id, 7),
+  ]);
   type RecentEvent = Awaited<ReturnType<typeof getRecentEvents>>[number];
 
   return (
@@ -67,6 +73,15 @@ export default async function LinkDetailsPage({ params }: Props) {
             <div className="flex justify-between"><dt className="text-zinc-500">Desktop/Web</dt><dd>{stats.platformBreakdown.web}</dd></div>
             <div className="flex justify-between"><dt className="text-zinc-500">Last click</dt><dd>{formatDateTime(stats.lastClickAt)}</dd></div>
           </dl>
+        </Card>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card title="Clicks over time" subtitle="Last 7 days: total vs unique clicks">
+          <LineClicksChart points={clicksOverTime} />
+        </Card>
+        <Card title="Platform distribution" subtitle="iOS / Android / Web split">
+          <DoughnutPlatformChart platformBreakdown={stats.platformBreakdown} />
         </Card>
       </div>
 

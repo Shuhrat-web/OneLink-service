@@ -74,6 +74,12 @@ Production-minded MVP платформа для smart-редиректов и QR
 - `sha256(ip + userAgent + salt)`
 - окно уникальности: 24 часа
 
+В admin-аналитике добавлены Chart.js визуализации (без удаления существующих карточек/таблиц):
+
+- `Clicks over time` (line): total vs unique клики за последние 7 дней
+- `Platform distribution` (doughnut): iOS / Android / Web
+- графики есть на dashboard и на странице деталей ссылки
+
 ### Admin Panel
 
 - `/admin/login`
