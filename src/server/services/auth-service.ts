@@ -47,10 +47,19 @@ export async function createAdminSession(userId: string) {
   const exp = Math.floor(Date.now() / 1000) + SESSION_AGE_SEC;
   const token = encode({ sub: userId, exp });
   const cookieStore = await cookies();
+
+  const explicitCookieSecure = process.env.COOKIE_SECURE;
+  const secure =
+    explicitCookieSecure === "true"
+      ? true
+      : explicitCookieSecure === "false"
+        ? false
+        : (process.env.APP_BASE_URL?.startsWith("https://") ?? process.env.NODE_ENV === "production");
+
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure,
     path: "/",
     maxAge: SESSION_AGE_SEC,
   });
