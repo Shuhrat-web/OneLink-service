@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { withLinkPrefix } from "@/lib/env";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Badge } from "@/components/ui/badge";
 import { requireAdmin } from "@/features/auth/require-admin";
@@ -58,7 +59,7 @@ export default async function AdminLinksPage({ searchParams }: Props) {
             {result.items.map((item) => (
               <tr key={item.id} className="border-t border-zinc-100">
                 <td className="px-4 py-3"><Link className="font-medium text-zinc-900 underline" href={`/admin/links/${item.id}`}>{item.title}</Link></td>
-                <td className="px-4 py-3 text-zinc-700">/{item.slug}</td>
+                <td className="px-4 py-3 text-zinc-700">{withLinkPrefix(`/${item.slug}`)}</td>
                 <td className="px-4 py-3"><Badge tone={item.isActive ? "green" : "red"}>{item.isActive ? "active" : "inactive"}</Badge></td>
                 <td className="px-4 py-3"><Badge tone={item.captchaEnabled ? "amber" : "gray"}>{item.captchaEnabled ? item.captchaMode : "off"}</Badge></td>
                 <td className="px-4 py-3 text-zinc-700">{formatDateTime(item.expiresAt)}</td>

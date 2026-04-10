@@ -45,14 +45,14 @@ Production-minded MVP платформа для smart-редиректов и QR
 
 ### Redirect flow
 
-Для `/:slug`:
+Для публичного URL (по умолчанию `/:slug`, либо `/<LINK_PREFIX>/:slug` если задан `LINK_PREFIX`):
 
 1. Поиск ссылки по slug
 2. Проверка существования
 3. Проверка `isActive`
 4. Проверка `expiresAt`
 5. Проверка `maxClicks`
-6. Если включена captcha — переход на `/captcha/:slug`
+6. Если включена captcha — переход на `/captcha/:slug` (или `/<LINK_PREFIX>/captcha/:slug` при включенном префиксе)
 7. Детект платформы из User-Agent
 8. Редирект на целевой URL
 9. Запись события клика в аналитику
@@ -82,6 +82,7 @@ Production-minded MVP платформа для smart-редиректов и QR
 - `/admin/links/new`
 - `/admin/links/[id]`
 - `/admin/links/[id]/edit`
+- После успешного логина используется полный переход на `/admin`, чтобы сессионная cookie гарантированно учитывалась сразу на первом заходе
 
 Фильтры в списке ссылок:
 
@@ -92,7 +93,7 @@ Production-minded MVP платформа для smart-редиректов и QR
 ### QR
 
 - Генерация PNG/SVG
-- Предпросмотр на странице деталей ссылки
+- Предпросмотр на странице деталей ссылки рендерится через стандартный `<img>` с `src=/api/qr/[slug]?format=png`
 - Скачивание PNG/SVG
 
 ---
@@ -143,6 +144,10 @@ cp .env.example .env
 - `APP_HASH_SALT`
 - `TURNSTILE_SECRET_KEY`
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+
+Опционально:
+
+- `LINK_PREFIX` — префикс публичных ссылок. Поддерживаются значения вида `prefix`, `/prefix`, `/prefix/`; внутри приложения нормализуется до `prefix`.
 
 Для seed admin:
 
@@ -212,8 +217,10 @@ docker compose up --build
 
 ### Public
 
-- `GET /:slug`
-- `GET /captcha/:slug`
+- `GET /:slug` (по умолчанию, если `LINK_PREFIX` не задан)
+- `GET /<LINK_PREFIX>/:slug` (если `LINK_PREFIX` задан)
+- `GET /captcha/:slug` (по умолчанию)
+- `GET /<LINK_PREFIX>/captcha/:slug` (если `LINK_PREFIX` задан)
 - `GET /api/qr/[slug]?format=png|svg&download=1`
 - `POST /api/public/captcha/verify`
 

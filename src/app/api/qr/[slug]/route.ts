@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
+import { withLinkPrefix } from "@/lib/env";
 import { findSmartLinkBySlug } from "@/server/repositories/smart-link-repository";
 
 type Ctx = { params: Promise<{ slug: string }> };
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest, ctx: Ctx) {
   if (!link) return NextResponse.json({ error: "Link not found" }, { status: 404 });
 
   const base = process.env.APP_BASE_URL ?? new URL(req.url).origin;
-  const payload = `${base}/${link.slug}`;
+  const payload = `${base}${withLinkPrefix(`/${link.slug}`)}`;
 
   const url = new URL(req.url);
   const format = (url.searchParams.get("format") ?? "png").toLowerCase();

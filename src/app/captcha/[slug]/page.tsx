@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { withLinkPrefix } from "@/lib/env";
 import { findSmartLinkBySlug } from "@/server/repositories/smart-link-repository";
 import { resolveAvailability } from "@/server/services/link-rules-service";
 import { CaptchaWidget } from "./captcha-widget";
@@ -13,7 +14,7 @@ export default async function CaptchaPage({ params }: Props) {
   const state = await resolveAvailability(link);
   if (state !== "ok") redirect(`/status?type=${state}`);
 
-  if (!link.captchaEnabled || link.captchaMode !== "always") redirect(`/${slug}`);
+  if (!link.captchaEnabled || link.captchaMode !== "always") redirect(withLinkPrefix(`/${slug}`));
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-6">

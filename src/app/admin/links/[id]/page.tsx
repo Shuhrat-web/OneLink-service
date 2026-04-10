@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
+import { withLinkPrefix } from "@/lib/env";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -24,7 +24,7 @@ export default async function LinkDetailsPage({ params }: Props) {
   return (
     <AdminShell>
       <div className="mb-4 flex items-center justify-between">
-        <div><h2 className="text-2xl font-semibold text-zinc-900">{link.title}</h2><p className="text-sm text-zinc-500">/{link.slug}</p></div>
+        <div><h2 className="text-2xl font-semibold text-zinc-900">{link.title}</h2><p className="text-sm text-zinc-500">{withLinkPrefix(`/${link.slug}`)}</p></div>
         <div className="flex gap-2">
           <Link href={`/admin/links/${link.id}/edit`} className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white">Edit</Link>
           <form action={`/api/admin/links/${link.id}`} method="post">
@@ -49,7 +49,7 @@ export default async function LinkDetailsPage({ params }: Props) {
         </Card>
 
         <Card title="QR Preview" subtitle="PNG preview and download options">
-          <Image src={`/api/qr/${link.slug}?format=png`} alt={`QR ${link.slug}`} width={256} height={256} className="mx-auto aspect-square w-full max-w-64 rounded-md border border-zinc-200 bg-white p-2" />
+          <img src={`/api/qr/${link.slug}?format=png`} alt={`QR ${link.slug}`} width={256} height={256} className="mx-auto aspect-square w-full max-w-64 rounded-md border border-zinc-200 bg-white p-2" />
           <div className="mt-4 flex gap-2">
             <a href={`/api/qr/${link.slug}?format=png&download=1`} className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">Download PNG</a>
             <a href={`/api/qr/${link.slug}?format=svg&download=1`} className="rounded-md bg-zinc-100 px-3 py-2 text-sm text-zinc-900">Download SVG</a>

@@ -4,6 +4,7 @@ import { resolveAvailability } from "@/server/services/link-rules-service";
 import { parseUserAgent } from "@/lib/user-agent";
 import { pickRedirectTarget } from "@/server/services/redirect-service";
 import { recordClickEvent } from "@/server/services/analytics-service";
+import { withLinkPrefix } from "@/lib/env";
 
 type Ctx = { params: Promise<{ slug: string }> };
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest, ctx: Ctx) {
   }
 
   if (link.captchaEnabled && link.captchaMode === "always") {
-    return NextResponse.redirect(new URL(`/captcha/${slug}`, req.url));
+    return NextResponse.redirect(new URL(withLinkPrefix(`/captcha/${slug}`), req.url));
   }
 
   const agent = parseUserAgent(req.headers.get("user-agent"));
