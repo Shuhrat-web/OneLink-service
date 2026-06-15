@@ -80,7 +80,8 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
     await deleteSmartLinkUseCase(id);
 
-    return Response.redirect(new URL("/admin/links", req.url));
+    const origin = req.headers.get("origin");
+    return Response.redirect(new URL("/admin/links", origin ?? req.url));
   }
   return notFound();
 }

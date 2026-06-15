@@ -12,13 +12,14 @@ export async function GET(req: NextRequest, ctx: Ctx) {
   const { slug } = await ctx.params;
   const link = await findSmartLinkBySlug(slug);
   const availability = await resolveAvailability(link);
+  const origin = req.headers.get("origin") ?? new URL(req.url).origin;
 
   if (availability !== "ok" || !link) {
-    return NextResponse.redirect(new URL(`/status?type=${availability}`, req.url));
+    return NextResponse.redirect(new URL(`/status?type=${availability}`, origin));
   }
 
   if (link.captchaEnabled && link.captchaMode === "always") {
-    return NextResponse.redirect(new URL(withLinkPrefix(`/captcha/${slug}`), req.url));
+    return NextResponse.redirect(new URL(withLinkPrefix(`/captcha/${slug}`), origin));
   }
 
   const agent = parseUserAgent(req.headers.get("user-agent"));
